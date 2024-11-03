@@ -1,6 +1,6 @@
-# Speedlyzer
+# Quicknet
 
-**Speedlyzer** is a web-based network speed testing application built using Go (backend) and React (frontend). The app measures internet speed by testing **latency (ping)**, **download speed**, and **upload speed**. It provides an intuitive interface for users to get accurate network metrics, similar to services like Speedtest.net.
+**Quicknet** is a web-based network speed testing application built using Go (backend) and React (frontend). The app measures internet speed by testing **latency (ping)**, **download speed**, and **upload speed**. It provides an intuitive interface for users to get accurate network metrics, similar to services like Speedtest.net.
 
 ## Features
 
@@ -16,7 +16,7 @@
 
 ## Architecture
 
-Speedlyzer uses a client-server architecture:
+Quicknet uses a client-server architecture:
 - The **React frontend** makes API calls to the **Go backend** to initiate tests and display results.
 - The **Go backend** hosts the endpoints to serve large data for download speed testing, receive upload data, and respond to latency requests.
 
@@ -35,8 +35,8 @@ Follow these instructions to set up and run the project locally.
 #### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/Speedlyzer.git
-cd Speedlyzer
+git clone https://github.com/BarakaCaleb/Quicknet.git
+cd Quicknet
 
 2. Set Up the Backend (Go)
 
@@ -44,7 +44,7 @@ Navigate to the backend folder and install Go dependencies.
 
 bash
 
-cd speedtest-backend
+cd Quicknet-backend
 go mod tidy
 
 Run the Go server:
@@ -60,7 +60,7 @@ Open a new terminal window, navigate to the frontend folder, and install npm dep
 
 bash
 
-cd ../speedtest-frontend
+cd ../Quicknet-frontend
 npm install
 
 Start the React development server:
@@ -90,11 +90,11 @@ php
 
 Speedlyzer
 │
-├── speedtest-backend           # Go backend
+├── Quicknet-backend           # Go backend
 │   ├── main.go                  # Main Go server file with endpoints
 │   └── go.mod                   # Go module dependencies
 │
-└── speedtest-frontend           # React frontend
+└── Quicknet-frontend           # React frontend
     ├── public                   # Public assets
     ├── src
     │   ├── components           # React components
