@@ -3,51 +3,65 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
-	"math/rand"
 	"net/http"
-	"time"
 )
 
-/*Ping endpoint for latency testing*/
+// CORS middleware to handle cross-origin requests
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")                   // Allow all origins for testing; you may want to restrict this in production
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS") // Allowed HTTP methods
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")       // Allowed headers
 
-func handlPing(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("pong"))
+		// Handle preflight (OPTIONS) requests
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
 
-/*Download endpoint for download speed testing*/
+// handlePing responds with "pong"
+func handlePing(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprint(w, "Online")
+}
 
+// handleDownload streams a large amount of data to simulate download speed testing
 func handleDownload(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Length", "50000000") // ~50 MB
-	data := make([]byte, 1024*1024)
-
-	rand.Seed(time.Now().UnixNano())
-	for i := 0; i < len(data); i++ {
-		data[i] = byte(rand.Intn(256))
-	}
-
-	for i := 0; i < 50; i++ {
-		_, _ = w.Write(data) // Send 50 MB of data
-	}
+	w.Header().Set("Content-Type", "application/octet-stream")
+	io.WriteString(w, string(make([]byte, 50*1024*1024))) // Simulate a 50 MB download
 }
 
-/*Upload endpoint for upload speed testing*/
-
+// handleUpload simulates processing an uploaded file
 func handleUpload(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
-	bytesReceived, _ := io.Copy(io.Discard, r.Body) // Discard uploaded data
-	elapsed := time.Since(start)
+	// Check if the request method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 
-	uploadSpeed := float64(bytesReceived) / elapsed.Seconds()
-	fmt.Fprintf(w, "Upload speed: %f bytes/sec", uploadSpeed)
+	// Parse the uploaded file (limiting size to 50 MB)
+	err := r.ParseMultipartForm(50 << 20) // 50 MB
+	if err != nil {
+		http.Error(w, "Failed to parse form", http.StatusBadRequest)
+		return
+	}
+
+	fmt.Fprint(w, "Upload successful")
 }
 
 func main() {
-	http.HandleFunc("/ping", handlePing)
-	http.HandleFunc("/download", handleDownload)
-	http.HandleFunc("/upload", handleUpload)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ping", handlePing)
+	mux.HandleFunc("/download", handleDownload)
+	mux.HandleFunc("/upload", handleUpload)
 
-	fmt.Println("Server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	fmt.Println("Starting server on :8080...")
+	fmt.Println("Hooray! Server up and running")
+	if err := http.ListenAndServe(":8080", enableCORS(mux)); err != nil {
+		fmt.Println("Error starting server:", err)
+	}
 }
